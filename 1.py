@@ -13,6 +13,8 @@ from langchain.chat_models.gigachat import GigaChat
 import time
 import base64
 import assemblyai as aai
+import uuid
+import time
 
 
 debug_mode = True
@@ -108,43 +110,88 @@ def gen(prom):
 # uuid = api.generate("Sun in sky", model_id)
 # images = api.check_generation(uuid)
 
-class StreamHandler(BaseCallbackHandler):
-    def __init__(self, initial_text=""):
-        pass
-
-    def on_llm_new_token(self, token: str, **kwargs) -> None:
-        if debug_mode:
-            print(f"{token} -", end="", flush=True)
 # Яндекс
 # folder
 # b1g3uste2djiuces45cu 
 # t1.9euelZqcx8-bmpDPj43MmJrLnpzGiu3rnpWazY7KmZCPzMvGyMyenJGSyMjl8_cWdiJR-e9lKWxw_d3z91YkIFH572UpbHD9zef1656VmouZk4-Ri5CXkZ2RksmKzI3O7_zF656VmouZk4-Ri5CXkZ2RksmKzI3O.U-8fOpAesS4WKwlaHfmufC7FFyM0ZUH5NljTJEkufyTnKhhdYn17sMGILMWVEfvnYBtz4RhzaOtNQbn-QoNJAw
 bot = telebot.TeleBot("6365480968:AAHLyOpHK45Sr9vzNvrl56q83z-HxZ1tICk")
 # 11ae50e2-e07f-4c0b-9250-2f7103a028f3
-# MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjExYWU1MGUyLWUwN2YtNGMwYi05MjUwLTJmNzEwM2EwMjhmMw==
-chat = GigaChat(credentials="MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjExYWU1MGUyLWUwN2YtNGMwYi05MjUwLTJmNzEwM2EwMjhmMw==", 
-    verify_ssl_certs=False, streaming=True, callbacks=[StreamHandler()])
-messages_chatgig = [
-    SystemMessage(
-        content="""Ты бот, который сидит в коментариях телеграмм канала, не соглашается с людьми и всегда говорит противоположные вещи. 
+# MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA==
+# chat = GigaChat(credentials="MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA==", 
+#     verify_ssl_certs=False)
+# messages_chatgig = [
+#     SystemMessage(
+#         content="""Ты бот, который сидит в коментариях телеграмм канала, не соглашается с людьми и всегда говорит противоположные вещи. 
+#         Например, ты обязан на 'Привет' ответить 'Пока', 
+#         на утверждение, что земля имеет форму шара, ты должен ответить, что она плоская и т.д. 
+#         Твое имя Саркастико. Иногда ты присылаешь простые эмодзи без сопровождающего текста. Даже точку в конце не ставишь.
+#         Приходящие тебе сообщения имеют такую структуру: <Имя_пользователя>: <Сообщение_пользователя>.
+#         Структура твоих ответов: <Твоё_сообщение>.
+#         ЗАПРЕЩЕНО использовать структуру, как у пользователя. Твой ответ ОБЯЗАН содержать только сообщение!
+#         Когда у тебя спрашивают погоду, ты должен сгенерировать только специальный json: {"function":"weather", "city":str}, где city — локация/город/населённый пункт, получаемый из сообщения пользователя.
+#         Старайся обращаться к пользователям по имени. Например: Привет, <Имя_пользователя>! Пока, <Имя_пользователя>! Как дела, <Имя_пользователя>?
+#         """
+#     )
+# ]
+
+
+def get_token(RqUID):
+    url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+
+    payload='scope=GIGACHAT_API_PERS'
+    headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+      'RqUID': str(RqUID),
+      'Authorization': 'Basic MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA=='
+    }
+    response = req.request("POST", url, headers=headers, data=payload, verify=False)
+    return response
+
+
+def chat(access_token, messages, repetition_penalty=1, max_tokens=1024, n=1, top_p=0.1, temperature=0.1):
+    url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+    payload = json.dumps({
+      "model": "GigaChat:latest",
+      "messages": messages,
+      "temperature": temperature,
+      "top_p": top_p,
+      "n": n,
+      "stream": False,
+      "max_tokens": max_tokens,
+      "repetition_penalty": repetition_penalty
+    })
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ' + access_token
+    }
+    response = req.request("POST", url, headers=headers, data=payload, verify=False)
+    return json.loads(response.text)
+
+x = uuid.uuid4()
+
+get_t = json.loads(get_token(x).content)
+messages_gig = [{
+    "role": "system",
+    "content": """Ты бот, который сидит в коментариях телеграмм канала, не соглашается с людьми и всегда говорит противоположные вещи. 
         Например, ты обязан на 'Привет' ответить 'Пока', 
         на утверждение, что земля имеет форму шара, ты должен ответить, что она плоская и т.д. 
         Твое имя Саркастико. Иногда ты присылаешь простые эмодзи без сопровождающего текста. Даже точку в конце не ставишь.
         Приходящие тебе сообщения имеют такую структуру: <Имя_пользователя>: <Сообщение_пользователя>.
         Структура твоих ответов: <Твоё_сообщение>.
         ЗАПРЕЩЕНО использовать структуру, как у пользователя. Твой ответ ОБЯЗАН содержать только сообщение!
-        Когда у тебя спрашивают погоду, ты должен сгенерировать только специальный json: {"function":"weather", "city":str}, где city — локация/город/населённый пункт, получаемый из сообщения пользователя.
+        Когда у тебя спрашивают погоду, ты ОБЯЗАН сгенерировать только специальный json: {"function":"weather", "city":str}, где city — локация/город/населённый пункт, получаемый из сообщения пользователя.
         Старайся обращаться к пользователям по имени. Например: Привет, <Имя_пользователя>! Пока, <Имя_пользователя>! Как дела, <Имя_пользователя>?
         """
-    )
-]
+}]
 
 def shit(response):
     if response[0:2] == "О,":
         response = "Бля"+response[1:]
     return response.replace("Вау", "Ахуеть").replace("вау", "ахуеть").replace("Ого", "Ебать").replace(" ого", " ебать").replace("Бетонная глыба", "Придурок").replace('нафиг', 'нахуй').replace('Ебатьнь', 'Огонь')
 
-def message_send_pic(message):
+def message_send_pic(message, get_t):
     if message.text == "Да":
         bot.reply_to(message, "Пизда")
     else:
@@ -156,7 +203,7 @@ def message_send_pic(message):
         # print(name_u)
         message.text = message.text.replace('"', '\\"')
         messages1=str(name_u)+": "+message.text
-        response = run_conversation(messages1)
+        response = run_conversation(messages1, get_t)
         response = shit(response)
 
         if random.randint(1, 10) == 6:
@@ -199,154 +246,150 @@ def get_current_weather(location):
 #     }
 #     return json.dumps(movie_info)
 
-def run_conversation(messages):
+def run_conversation(messages, get_t):
     print(messages)
-    messages_chatgig.append(HumanMessage(content=messages))
-    res = chat(messages_chatgig, 
-        top_p=0.4)
-    messages_chatgig.append(res)
-    print("Саркастико: "+res.content)
+    messages_gig.append({"role": "user", "content": messages })
+    messages_gig.append({"role": "assistant", "content": chat(get_t['access_token'], messages_gig)["choices"][0]['message']['content']})
+    print("Саркастико: "+messages_gig[len(messages_gig)-1]['content'])
     weath = ""
     try:
-        weath = get_current_weather(json.loads(res.content)['city'])
+        weath = get_current_weather(json.loads(messages_gig[len(messages_gig)-1]['content'])['city'])
     except json.decoder.JSONDecodeError:
-        return res.content
-    messages_chatgig.append(HumanMessage(content=weath+"\nОтформатируй этот json как обычное сообщение о погоде."))
-    print(weath)
-    res = chat(messages_chatgig, 
-        top_p=0.4)
-    messages_chatgig.append(res)
-    return res.content
+        return messages_gig[len(messages_gig)-1]['content']
+    messages_gig.append({"role": "user", "content": weath+"\nОтформатируй этот json как обычное сообщение о погоде в UTF-8." })
+    messages_gig.append({"role": "assistant", "content": chat(get_t['access_token'], messages_gig)["choices"][0]['message']['content']})
+    return messages_gig[len(messages_gig)-1]['content']
 user_id = [1145705460, 1087968824, 777000]
-
 
 @bot.channel_post_handler()
 def handle_messages(messages):
-    # for message in messages:
-    if debug_mode:
-        print(messages[0])
-    message = messages[0]
-    if message.content_type == "video" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        # r_file = req.get(bot.get_file_url(message.video.file_id))
-        file_info = bot.get_file(message.video.file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
-        file = open("otus.mp4", "wb+")
-        file.write(downloaded_file)
-        file.close()
-        transcript = transcriber.transcribe("C:\\Users\\becke\\OneDrive\\Desktop\\bot\\otus.mp4")
-        # transcript.text=transcript.text.replace("Субтитры сделал DimaTorzok", "")
+    global get_t
+    for message in messages:
+        if int(float(time.time())*1000) > int(get_t['expires_at']):
+            get_t = json.loads(get_token(x).content)
         if debug_mode:
-            print(transcript.text)
-        if message.text != None:
-            message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\"\n" + message.text
-        elif message.caption != None:
-            message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\"\n" + message.caption
-        else:
-            message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\""
-        message_send_pic(message)
-    elif message.content_type == "voice" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        r_file = req.get(bot.get_file_url(message.voice.file_id))
-        file = open("otus.mp4", "wb+")
-        file.write(r_file.content)
-        file.close()
-        transcript = transcriber.transcribe("C:\\Users\\becke\\OneDrive\\Desktop\\bot\\otus.mp4")
-        if debug_mode:
-            print(transcript.text)
-        if message.text != None:
-            message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\"\n" + message.text
-        elif message.caption != None:
-            message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\"\n" + message.caption
-        else:
-            message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\""
-        message_send_pic(message)
-    elif message.content_type == "photo" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        # if debug_mode:
-        #     print("photo")
-        # file_info = bot.get_file(message.photo[len(message.photo)-1].file_id)
-        # downloaded_file = bot.download_file(file_info.file_path)
-        # file = open("photus.png", "wb+")
-        # file.write(downloaded_file)
-        # file.close()
-        # output = replicate.run(
-        #     "methexis-inc/img2prompt:50adaf2d3ad20a6f911a8a9e3ccf777b263b8596fbd2c8fc26e8888f8a0edbb5",
-        #     input={"image": open("photus.png", "rb")}
-        # )
-        # if debug_mode:
-        #     print("output:")
-        #     print(output)
-        # if message.text != None:
-        #     message.text = "Я отправил тебе фото. Вот описание фото: \"" + output + "\"\n" + message.text
-        # elif message.caption != None:
-        #     message.text = "Я отправил тебе фото. Вот описание фото: \"" + output + "\"\n" + message.caption
-        # else:
-        #     message.text = "Я отправил тебе фото. Вот описание фото: \"" + output + "\""
-        message_send_pic(message)
-    elif message.content_type == "sticker" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        # name_ru = translit(message.from_user.first_name, language_code='ru', reversed=True)
-        # print(name_ru)
-        message.text = message.sticker.emoji
-        if message.from_user.first_name == None:
-            message.from_user.first_name = "Ноунейм"
-        if message.from_user.last_name == None:
-            message.from_user.last_name = " "
-        name_u = message.from_user.first_name + " " + message.from_user.last_name
-        messages1=str(name_u)+": "+message.text
-        # execute_query('INSERT INTO gpt_data(role, content, name) VALUES("'+"user"+'", "'+message.text+'", "'+name_ru+'")')
-
-        # r1=execute_read_query("SELECT * FROM gpt_data WHERE id=1")
-        # rM=execute_read_query("SELECT * FROM gpt_data ORDER BY id DESC")
-        # r=execute_read_query("SELECT * FROM gpt_data WHERE id>"+str(len(rM)-31))
-
-        messages_chatgig.append(HumanMessage(content=messages1))
-        res = chat(messages_chatgig)
-        messages_chatgig.append(res)
-        res.content = shit(res.content)
-        if res.content in stickers.keys():
-            bot.send_sticker(message.chat.id, sticker=stickers[res.content], reply_parameters=telebot.types.ReplyParameters(message.message_id))
-        elif len(res.content) == 1:
-            stickers[res.content]=message.sticker.file_id
-            print("!!!!!! "+ str(stickers))
-            bot.send_sticker(message.chat.id, sticker=stickers[res.content], reply_parameters=telebot.types.ReplyParameters(message.message_id))
-        else:
-            bot.reply_to(message, res.content)
-    elif message.text != None  and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        if message.text == "Да":
-            bot.reply_to(message, "Пизда")
-        else:
+            print(messages[0])
+        message = messages[0]
+        if message.content_type == "video" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            # r_file = req.get(bot.get_file_url(message.video.file_id))
+            file_info = bot.get_file(message.video.file_id)
+            downloaded_file = bot.download_file(file_info.file_path)
+            file = open("otus.mp4", "wb+")
+            file.write(downloaded_file)
+            file.close()
+            transcript = transcriber.transcribe("C:\\Users\\becke\\OneDrive\\Desktop\\bot\\otus.mp4")
+            # transcript.text=transcript.text.replace("Субтитры сделал DimaTorzok", "")
+            if debug_mode:
+                print(transcript.text)
+            if message.text != None:
+                message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\"\n" + message.text
+            elif message.caption != None:
+                message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\"\n" + message.caption
+            else:
+                message.text = "Я отправил тебе видео. Вот о чем говорится в видео: \"" + transcript.text + "\""
+            message_send_pic(message, get_t)
+        elif message.content_type == "voice" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            r_file = req.get(bot.get_file_url(message.voice.file_id))
+            file = open("otus.mp4", "wb+")
+            file.write(r_file.content)
+            file.close()
+            transcript = transcriber.transcribe("C:\\Users\\becke\\OneDrive\\Desktop\\bot\\otus.mp4")
+            if debug_mode:
+                print(transcript.text)
+            if message.text != None:
+                message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\"\n" + message.text
+            elif message.caption != None:
+                message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\"\n" + message.caption
+            else:
+                message.text = "Я отправил тебе голосовое сообщение. Вот содержимое голосового сообщения: \"" + transcript.text + "\""
+            message_send_pic(message, get_t)
+        elif message.content_type == "photo" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            # if debug_mode:
+            #     print("photo")
+            # file_info = bot.get_file(message.photo[len(message.photo)-1].file_id)
+            # downloaded_file = bot.download_file(file_info.file_path)
+            # file = open("photus.png", "wb+")
+            # file.write(downloaded_file)
+            # file.close()
+            # output = replicate.run(
+            #     "methexis-inc/img2prompt:50adaf2d3ad20a6f911a8a9e3ccf777b263b8596fbd2c8fc26e8888f8a0edbb5",
+            #     input={"image": open("photus.png", "rb")}
+            # )
+            # if debug_mode:
+            #     print("output:")
+            #     print(output)
+            # if message.text != None:
+            #     message.text = "Я отправил тебе фото. Вот описание фото: \"" + output + "\"\n" + message.text
+            # elif message.caption != None:
+            #     message.text = "Я отправил тебе фото. Вот описание фото: \"" + output + "\"\n" + message.caption
+            # else:
+            message.text = "Я отправил тебе фото."
+            message_send_pic(message, get_t)
+        elif message.content_type == "sticker" and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            # name_ru = translit(message.from_user.first_name, language_code='ru', reversed=True)
+            # print(name_ru)
+            message.text = message.sticker.emoji
             if message.from_user.first_name == None:
                 message.from_user.first_name = "Ноунейм"
             if message.from_user.last_name == None:
                 message.from_user.last_name = " "
             name_u = message.from_user.first_name + " " + message.from_user.last_name
-            message.text = message.text.replace('"', '\\"')
             messages1=str(name_u)+": "+message.text
-            response = run_conversation(messages1)
-            response = shit(response)
-            if random.randint(1, 10) == 6:
-                bot.send_photo(message.chat.id, photo=gen(response), caption=response, reply_parameters=telebot.types.ReplyParameters(message.message_id))
-            elif response in stickers.keys():
-                bot.send_sticker(message.chat.id, sticker=stickers[response], reply_parameters=telebot.types.ReplyParameters(message.message_id))
+            # execute_query('INSERT INTO gpt_data(role, content, name) VALUES("'+"user"+'", "'+message.text+'", "'+name_ru+'")')
+
+            # r1=execute_read_query("SELECT * FROM gpt_data WHERE id=1")
+            # rM=execute_read_query("SELECT * FROM gpt_data ORDER BY id DESC")
+            # r=execute_read_query("SELECT * FROM gpt_data WHERE id>"+str(len(rM)-31))
+
+            messages_gig.append({"role": "user", "content": messages1 })
+            messages_gig.append({"role": "assistant", "content": chat(get_t['access_token'], messages_gig)["choices"][0]['message']['content']})
+            res = shit(messages_gig[len(messages_gig)-1]['content'])
+            if res in stickers.keys():
+                bot.send_sticker(message.chat.id, sticker=stickers[res], reply_parameters=telebot.types.ReplyParameters(message.message_id))
+            elif len(res) == 1:
+                stickers[res]=message.sticker.file_id
+                print("!!!!!! "+ str(stickers))
+                bot.send_sticker(message.chat.id, sticker=stickers[res], reply_parameters=telebot.types.ReplyParameters(message.message_id))
             else:
-                bot.reply_to(message, response)
-    elif message.caption != None and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
-        if message.caption == "Да":
-            bot.reply_to(message, "Пизда")
-        else:
-            if message.from_user.first_name == None:
-                message.from_user.first_name = "Ноунейм"
-            if message.from_user.last_name == None:
-                message.from_user.last_name = " "
-            name_u = message.from_user.first_name + " " + message.from_user.last_name
-            message.text = message.text.replace('"', '\\"')
-            messages1=str(name_u)+": "+message.text
-            response = run_conversation(messages1)
-            response = shit(response)
-            if random.randint(1, 10) == 6:
-                bot.send_photo(message.chat.id, photo=gen(response), caption=response, reply_parameters=telebot.types.ReplyParameters(message.message_id))
-            elif response in stickers.keys():
-                bot.send_sticker(message.chat.id, sticker=stickers[response], reply_parameters=telebot.types.ReplyParameters(message.message_id))
+                bot.reply_to(message, res)
+        elif message.text != None  and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            if message.text == "Да":
+                bot.reply_to(message, "Пизда")
             else:
-                bot.reply_to(message, response)
+                if message.from_user.first_name == None:
+                    message.from_user.first_name = "Ноунейм"
+                if message.from_user.last_name == None:
+                    message.from_user.last_name = " "
+                name_u = message.from_user.first_name + " " + message.from_user.last_name
+                message.text = message.text.replace('"', '\\"')
+                messages1=str(name_u)+": "+message.text
+                response = run_conversation(messages1, get_t)
+                response = shit(response)
+                if random.randint(1, 10) == 6:
+                    bot.send_photo(message.chat.id, photo=gen(response), caption=response, reply_parameters=telebot.types.ReplyParameters(message.message_id))
+                elif response in stickers.keys():
+                    bot.send_sticker(message.chat.id, sticker=stickers[response], reply_parameters=telebot.types.ReplyParameters(message.message_id))
+                else:
+                    bot.reply_to(message, response)
+        elif message.caption != None and (random.randint(0, 20) == 6 or message.from_user.id in user_id):
+            if message.caption == "Да":
+                bot.reply_to(message, "Пизда")
+            else:
+                if message.from_user.first_name == None:
+                    message.from_user.first_name = "Ноунейм"
+                if message.from_user.last_name == None:
+                    message.from_user.last_name = " "
+                name_u = message.from_user.first_name + " " + message.from_user.last_name
+                message.text = message.text.replace('"', '\\"')
+                messages1=str(name_u)+": "+message.text
+                response = run_conversation(messages1, get_t)
+                response = shit(response)
+                if random.randint(1, 10) == 6:
+                    bot.send_photo(message.chat.id, photo=gen(response), caption=response, reply_parameters=telebot.types.ReplyParameters(message.message_id))
+                elif response in stickers.keys():
+                    bot.send_sticker(message.chat.id, sticker=stickers[response], reply_parameters=telebot.types.ReplyParameters(message.message_id))
+                else:
+                    bot.reply_to(message, response)
 
         # Do something with the message
         # if message.text != None:
