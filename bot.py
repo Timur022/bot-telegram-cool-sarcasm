@@ -1,7 +1,7 @@
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.chat_models.gigachat import GigaChat
 import telebot
-token="6365480968:AAHLyOpHK45Sr9vzNvrl56q83z-HxZ1tICk"
+token="********"
 
 bot=telebot.TeleBot(token)
 @bot.message_handler()
