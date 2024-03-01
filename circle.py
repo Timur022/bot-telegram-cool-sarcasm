@@ -3,7 +3,7 @@ from sys import argv
 
 
 
-bot = telebot.TeleBot("6365480968:AAHLyOpHK45Sr9vzNvrl56q83z-HxZ1tICk")
+bot = telebot.TeleBot("********")
 
 if int(argv[1]) > 999:
 	file = open("C:\\Users\\becke\\OneDrive\\Desktop\\bot\\0001-"+str(argv[1])+".mp4", 'rb')
