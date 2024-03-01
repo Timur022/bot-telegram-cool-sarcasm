@@ -42,10 +42,10 @@ stickers = {'🤯': 'CAACAgIAAxkBAAIGs2XTdEp0pMQTFZsFL_tJcwABOS8b0AACXxQAAjdUcEh
             '😄': 'CAACAgIAAxkBAAIISGXXPgcKgd1aptY1Eh3jO3kcctYAAwMaAAIezLFKLw1RSCOuzl80BA', 
             '😸': 'CAACAgIAAxkBAAIIjGXXnfQAAfqwgrYuYU8VD_7qh6ZFewACMRgAAhpGUUioKe3ZOLnMTzQE'}
 
-aai.settings.api_key = "0d29d635244147a59c83524b47ddb44c"
+aai.settings.api_key = "<api_key>"
 transcriber = aai.Transcriber()
 
-os.environ.setdefault('REPLICATE_API_TOKEN', 'r8_K9Ca3DfllpqsDCDnpsxO7eEfXyqvp3e2M1pvH')
+os.environ.setdefault('REPLICATE_API_TOKEN', '******')
 # 8FC9E9039795BF010A3AB197358D375C
 # AD5800E17B8450C66CE404803C25A6FC
 
@@ -93,7 +93,7 @@ class Text2ImageAPI:
             time.sleep(delay)
 
 def gen(prom):
-    api = Text2ImageAPI('https://api-key.fusionbrain.ai/', '8FC9E9039795BF010A3AB197358D375C', 'AD5800E17B8450C66CE404803C25A6FC')
+    api = Text2ImageAPI('https://api-key.fusionbrain.ai/', '*****', '*****')
     model_id = api.get_model()
     uuid = api.generate(prom, model_id)
     images = api.check_generation(uuid)    
@@ -114,7 +114,7 @@ def gen(prom):
 # folder
 # b1g3uste2djiuces45cu 
 # t1.9euelZqcx8-bmpDPj43MmJrLnpzGiu3rnpWazY7KmZCPzMvGyMyenJGSyMjl8_cWdiJR-e9lKWxw_d3z91YkIFH572UpbHD9zef1656VmouZk4-Ri5CXkZ2RksmKzI3O7_zF656VmouZk4-Ri5CXkZ2RksmKzI3O.U-8fOpAesS4WKwlaHfmufC7FFyM0ZUH5NljTJEkufyTnKhhdYn17sMGILMWVEfvnYBtz4RhzaOtNQbn-QoNJAw
-bot = telebot.TeleBot("6365480968:AAHLyOpHK45Sr9vzNvrl56q83z-HxZ1tICk")
+bot = telebot.TeleBot("*********")
 # 11ae50e2-e07f-4c0b-9250-2f7103a028f3
 # MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA==
 # chat = GigaChat(credentials="MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA==", 
@@ -143,7 +143,7 @@ def get_token(RqUID):
       'Content-Type': 'application/x-www-form-urlencoded',
       'Accept': 'application/json',
       'RqUID': str(RqUID),
-      'Authorization': 'Basic MzRiZWIyNGUtN2E0ZC00NDU5LTliNTAtYjU3NGE3MzFhODBlOjg2YjA2ZDk0LWZlOWUtNGY1Mi05ODg5LTA5ZmRmYWFhMGEwNA=='
+      'Authorization': 'Basic **********'
     }
     response = req.request("POST", url, headers=headers, data=payload, verify=False)
     return response
@@ -216,9 +216,9 @@ def message_send_pic(message, get_t):
 
 def get_current_weather(location):
     """Get the current weather in a given location"""
-    resp = req.get('https://api.openweathermap.org/geo/1.0/direct?q='+location+'&limit=5&appid=4b79e183c4904f7f107cc6301cee2732')
+    resp = req.get('https://api.openweathermap.org/geo/1.0/direct?q='+location+'&limit=5&appid=******')
 
-    weather = req.get('https://api.openweathermap.org/data/2.5/weather?lat='+str(resp.json()[0]['lat'])+'&lon='+str(resp.json()[0]['lon'])+'&appid=4b79e183c4904f7f107cc6301cee2732&lang=ru&unit=metric')
+    weather = req.get('https://api.openweathermap.org/data/2.5/weather?lat='+str(resp.json()[0]['lat'])+'&lon='+str(resp.json()[0]['lon'])+'&appid=*******&lang=ru&unit=metric')
 
     weather_info = {
         "location": location,
